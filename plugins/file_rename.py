@@ -42,14 +42,14 @@ async def auto_rename_files(client, message: Message):
     _, file_extension = os.path.splitext(file_name)
     new_file_name = f"{format_template}{file_extension}"
     
-    # Create the Telegram file-sharing URL
-    file_sharing_url = f"https://t.me/{client.username}/{file_id}"
+    # Create the custom file-sharing URL using the given example format
+    base_url = "https://t.me/Fiile_Store/"
+    file_url = f"{base_url}{file_id} -n {new_file_name}"
 
     # Formulate a response to include the episode number and the file-sharing URL
-    response_text = f"File URL generated for Episode {episode_number}: {file_sharing_url}" if episode_number else f"File URL generated: {file_sharing_url}"
+    response_text = f"File URL generated for Episode {episode_number}: {file_url}" if episode_number else f"File URL generated: {file_url}"
 
     await message.reply_text(response_text)
 
     # Mark the operation as complete
     del renaming_operations[file_id]
-    
