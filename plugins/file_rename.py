@@ -1,55 +1,90 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from datetime import datetime
-from helper.database import madflixbotz
+import os
 import re
 
+# File renaming operations are tracked here
 renaming_operations = {}
 
-# Regex patterns for episode and quality extraction
-pattern1 = re.compile(r'S(\d+)(?:E|EP)(\d+)')
-pattern2 = re.compile(r'S(\d+)\s*(?:E|EP|-\s*EP)(\d+)')
-pattern3 = re.compile(r'(?:[([<{]?\s*(?:E|EP)\s*(\d+)\s*[)\]>}]?)')
-patternX = re.compile(r'(\d+)')
+# Extract patterns to find episode numbers and quality
+pattern_episode = re.compile(r'S(\d+)[^\d]*(\d+)')  # S01E01 type format
+pattern_quality = re.compile(r'(\d{3,4}p)', re.IGNORECASE)  # e.g., 1080p
 
 def extract_episode_number(filename):
-    match = re.search(pattern1, filename) or re.search(pattern2, filename) or re.search(pattern3, filename) or re.search(patternX, filename)
-    return match.group(2) if match else None
+    match = re.search(pattern_episode, filename)
+    if match:
+        return match.group(2)  # Return episode number if matched
+    return None
 
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-async def auto_rename_files(client, message: Message):
+def extract_quality(filename):
+    match = re.search(pattern_quality, filename)
+    if match:
+        return match.group(1)  # Return quality (e.g., 1080p)
+    return "Unknown"
+
+@Client.on_message(filters.private & filters.document)
+async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    file_id = message.document.file_id if message.document else message.video.file_id if message.video else message.audio.file_id
-    file_name = message.document.file_name if message.document else message.video.file_name if message.video else message.audio.file_name
-    
-    format_template = await madflixbotz.get_format_template(user_id)
-    if not format_template:
-        return await message.reply_text("Please set an auto-rename format using /autorename.")
+    file_id = message.document.file_id
+    file_name = message.document.file_name
 
-    # Avoid duplicate renaming operations
+    # Avoid multiple rename operations on the same file
     if file_id in renaming_operations:
         elapsed_time = (datetime.now() - renaming_operations[file_id]).seconds
         if elapsed_time < 10:
-            return  # Skip if file was recently renamed
+            return  # Ignore if the file was recently renamed
 
+    # Mark the file for renaming
     renaming_operations[file_id] = datetime.now()
 
-    # Extract episode number from file name
+    # Extract episode number and quality
     episode_number = extract_episode_number(file_name)
-    if episode_number:
-        format_template = format_template.replace("{episode}", str(episode_number))
+    quality = extract_quality(file_name)
 
+    # Define your renaming format template
+    format_template = "ShowName_S01_E{episode}_{quality}"  # Modify as needed
+
+    # Replace placeholders with actual values
+    if episode_number:
+        format_template = format_template.replace("{episode}", episode_number)
+    else:
+        format_template = format_template.replace("{episode}", "Unknown")
+
+    format_template = format_template.replace("{quality}", quality)
+
+    # Create new file name with the extension
     _, file_extension = os.path.splitext(file_name)
     new_file_name = f"{format_template}{file_extension}"
-    
-    # Create the custom file-sharing URL using the given example format
-    base_url = "https://t.me/Fiile_Store/"
-    file_url = f"{base_url}{file_id} -n {new_file_name}"
 
-    # Formulate a response to include the episode number and the file-sharing URL
-    response_text = f"File URL generated for Episode {episode_number}: {file_url}" if episode_number else f"File URL generated: {file_url}"
+    # Download the file locally with the new name
+    file_path = f"downloads/{new_file_name}"
+    download_msg = await message.reply_text("Downloading file...")
+    try:
+        path = await client.download_media(message=document, file_name=file_path)
+    except Exception as e:
+        del renaming_operations[file_id]  # Clear renaming flag
+        return await download_msg.edit(f"Download failed: {e}")
 
-    await message.reply_text(response_text)
+    # Upload the renamed file to Telegram
+    upload_msg = await download_msg.edit("Uploading file...")
+    try:
+        sent_message = await client.send_document(
+            chat_id=message.chat.id,
+            document=path,
+            caption=f"**{new_file_name}**"
+        )
+    except Exception as e:
+        os.remove(file_path)
+        del renaming_operations[file_id]
+        return await upload_msg.edit(f"Upload failed: {e}")
 
-    # Mark the operation as complete
+    # Generate Telegram file sharing link
+    file_url = f"https://t.me/{sent_message.chat.username}/{sent_message.message_id}"
+
+    # Clean up local file and complete the process
+    os.remove(file_path)
     del renaming_operations[file_id]
+
+    await upload_msg.edit(f"File uploaded successfully: [Download Link]({file_url})")
+    
