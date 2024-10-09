@@ -1,10 +1,6 @@
-import nest_asyncio
 import motor.motor_asyncio
 from config import Config
 from .utils import send_log
-
-# Apply nest_asyncio to avoid "This event loop is already running" error
-nest_asyncio.apply()
 
 class Database:
 
@@ -72,4 +68,12 @@ class Database:
         return user.get('media_type', None)
 
 
+
 madflixbotz = Database(Config.DB_URL, Config.DB_NAME)
+        
+
+
+# Jishu Developer 
+# Don't Remove Credit 🥺
+# Telegram Channel @Madflix_Bots
+# Developer @JishuDeveloper
