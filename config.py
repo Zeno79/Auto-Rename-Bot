@@ -3,20 +3,20 @@ id_pattern = re.compile(r'^.\d+$')
 
 class Config(object):
     # pyro client config
-    API_ID    = os.environ.get("API_ID", "")
-    API_HASH  = os.environ.get("API_HASH", "")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "") 
+    API_ID    = os.environ.get("API_ID", "21983955")
+    API_HASH  = os.environ.get("API_HASH", "edc3c906b06c2dd3dc6ee4c2573fb3f1")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6005947500:AAHloPfbZLLgDobGyMwLn1DLbn2WptOJIgo") 
 
     # database config
     DB_NAME = os.environ.get("DB_NAME","madflixbotz")     
-    DB_URL  = os.environ.get("DB_URL","")
+    DB_URL  = os.environ.get("DB_URL","mongodb+srv://luffyx7819:R0xYGEYRui9e2ScP@cluster1.lyqtfz7.mongodb.net/?retryWrites=true&w=majority")
  
     # other configs
     BOT_UPTIME  = time.time()
     START_PIC   = os.environ.get("START_PIC", "https://graph.org/file/4b306f4b15c23a8f22e58.jpg")
-    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '').split()]
-    FORCE_SUB   = os.environ.get("FORCE_SUB", "") 
-    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", ""))
+    ADMIN       = [int(admin) if id_pattern.search(admin) else admin for admin in os.environ.get('ADMIN', '5957500906').split()]
+    FORCE_SUB   = os.environ.get("FORCE_SUB", "0") 
+    LOG_CHANNEL = int(os.environ.get("LOG_CHANNEL", "-1001796496143"))
     
     # wes response configuration     
     WEBHOOK = bool(os.environ.get("WEBHOOK", "True"))
