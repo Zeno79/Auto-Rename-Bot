@@ -3,13 +3,13 @@ id_pattern = re.compile(r'^.\d+$')
 
 class Config(object):
     # pyro client config
-    API_ID    = os.environ.get("API_ID", "21983955")
-    API_HASH  = os.environ.get("API_HASH", "edc3c906b06c2dd3dc6ee4c2573fb3f1")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6005947500:AAHloPfbZLLgDobGyMwLn1DLbn2WptOJIgo") 
+    API_ID    = os.environ.get("API_ID", "6")
+    API_HASH  = os.environ.get("API_HASH", "eb06d4abfb49dc3eeb1aeb98ae0f581e")
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "6005947500:AAEdfOGTZeoGbF2dPECpduLrmmy1pMMOWuI") 
 
     # database config
     DB_NAME = os.environ.get("DB_NAME","madflixbotz")     
-    DB_URL  = os.environ.get("DB_URL","mongodb+srv://luffyx7819:R0xYGEYRui9e2ScP@cluster1.lyqtfz7.mongodb.net/?retryWrites=true&w=majority")
+    DB_URL  = os.environ.get("DB_URL","mongodb+srv://valeria56743:5AmrSvdwrvLDRBPx@cluster0.y9r5n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
  
     # other configs
     BOT_UPTIME  = time.time()
